@@ -8,22 +8,6 @@
 #include "file_utils.h"
 
 
-// TODO(kadenslater95): Brought this from my CHIP 8 emulator, need to update.
-// X and Y go from -1 to 1 (so lengths of 2.0f) in OpenGL and the dimensions
-// of Chip 8 screen are 64x32
-#define PIXEL_W 2.0f / 64.0f
-#define PIXEL_H 2.0f / 32.0f
-
-// The point size I will give to OpenGL
-#define POINT_S 10.0f
-
-// This is for a block of bytes that will be held as a "display buffer"
-// which I will iterate through and use to build up the Vertex Buffer.
-// The display is bitmapped so divide 8 to go from bits to bytes
-#define DISPLAY_SIZE 64 * 32 / 8
-
-
-unsigned char displayBuffer[DISPLAY_SIZE];
 
 unsigned int vertexShader;
 unsigned int fragmentShader;
@@ -33,42 +17,12 @@ unsigned int shaderProgram;
 unsigned int VAO, VBO, EBO;
 
 float vertices[] = {
-  -1.0f + PIXEL_W*0.5f + 0*PIXEL_W, 1.0f - PIXEL_H*0.5f - 0*PIXEL_W,
-  -1.0f + PIXEL_W*0.5f + 1*PIXEL_W, 1.0f - PIXEL_H*0.5f - 1*PIXEL_H,
-
-  -1.0f + PIXEL_W*0.5f + 63*PIXEL_W, 1.0f - PIXEL_H*0.5f - 0*PIXEL_H,
-
-  -1.0f + PIXEL_W*0.5f + 63*PIXEL_W, 1.0f - PIXEL_H*0.5f - 31*PIXEL_H,
-
-  -1.0f + PIXEL_W*0.5f + 0*PIXEL_W, 1.0f - PIXEL_H*0.5f - 31*PIXEL_H,
+  0.25f, 0.25f
 };
 
 unsigned int indices[] = {
-  0, 1, 2, 3, 4
+  0
 };
-
-
-void clear_display_buffer() {
-  for (int i = 0; i < DISPLAY_SIZE; i++) {
-    displayBuffer[i] = 0;
-  }
-}
-
-
-// void read_display_buffer() {
-  // Go through the display bitmap and BitwiseAND to check if I include this
-  // position in the vertex buffer or not
-  // Keep a count as I go so that I can know the correct size to allocate later
-
-  // unsigned int onStateCount;
-  // int positionState[64 * 32];
-
-  // for(int i = 0; i < 64; i++) {
-  //   for(int j = 0; j < 32; j++) {
-  //     if(displayBuffer[64*i + 32*j / 8] & )
-  //   }
-  // }
-// }
 
 
 /**
@@ -181,7 +135,7 @@ void on_realize(GtkGLArea *area) {
   printf("Using OpenGL Version: %s\n", glGetString(GL_VERSION));
 
 
-  clear_display_buffer();
+  glEnable(GL_PROGRAM_POINT_SIZE);
 
   build_shader_program();
 
@@ -209,8 +163,6 @@ void on_realize(GtkGLArea *area) {
   glBindVertexArray(0);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-  glPointSize(POINT_S);
 
 
   GLenum glError = glGetError();
