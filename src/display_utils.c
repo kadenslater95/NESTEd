@@ -1,6 +1,6 @@
 
 /**
- * @copyright  Copyright (C) 2025 Kaden Slater. All Rights Reserved.
+ * @copyright  Copyright (C) 2026 Kaden Slater. All Rights Reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -8,7 +8,7 @@
 #include "file_utils.h"
 
 
-// TODO: this was brought over from my CHIP 8 emulator, need to update this.
+// TODO(kadenslater95): Brought this from my CHIP 8 emulator, need to update.
 // X and Y go from -1 to 1 (so lengths of 2.0f) in OpenGL and the dimensions
 // of Chip 8 screen are 64x32
 #define PIXEL_W 2.0f / 64.0f
