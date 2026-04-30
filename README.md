@@ -10,7 +10,7 @@ This is a NES Tile Editor written in C. It uses GTK to make a desktop applicatio
 ### GTK4
 On a debian linux distro you can install with apt
 ```
-sudo apt-get install libgtk-4-1 libgtk-4-1-bin libgtk-4-1-dev
+sudo apt-get install libgtk-4-1 libgtk-4-bin libgtk-4-dev
 ```
 This provides GTK4 and the cflags via pkg-config which gets used in the Makefile.
 
