@@ -24,12 +24,14 @@ unsigned int shaderProgram = 0;
 unsigned int VAO, VBO, EBO;
 
 float vertices[] = {
-  0.25f, 0.25f
+  -0.9f, -0.9f,
+  0.9f, -0.9f,
+  0.9f, 0.9f,
+  -0.9f, 0.9f,
+  0.0f, 0.0f
 };
 
-unsigned int indices[] = {
-  0
-};
+unsigned int indices[] = {0, 1, 2, 3, 4, 5};
 
 
 /**
@@ -58,7 +60,9 @@ int load_shader_from_file(unsigned int shader, const char *filePath) {
 
   GLenum glError = glGetError();
   if (glError != GL_NO_ERROR) {
-    printf("Failed to load shader source! GL ERROR: %s\n", gluErrorString(glError));
+    printf(
+      "Failed to load shader source! GL ERROR: %s\n",
+      gluErrorString(glError));
     return 1;
   }
 
@@ -207,7 +211,11 @@ gboolean render(GtkGLArea *area, GdkGLContext *context) {
 
   glBindVertexArray(VAO);
 
-  glDrawElements(GL_POINTS, sizeof(indices) / sizeof(indices[0]), GL_UNSIGNED_INT, 0);
+  glDrawElements(
+    GL_POINTS,
+    sizeof(indices) / sizeof(indices[0]),
+    GL_UNSIGNED_INT,
+    0);
 
   glFlush();
 

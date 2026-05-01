@@ -4,6 +4,7 @@
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
+#include <stdint.h>
 #include "file_utils.h"
 
 /**
@@ -36,7 +37,7 @@ void read_file(const char *filePath, char **content, unsigned int *length) {
     return;
   }
 
-  long fileLength = ftell(filePointer);
+  int32_t fileLength = ftell(filePointer);
   if (fileLength < 0) {
     perror("Failed to get file length! Error: ");
 

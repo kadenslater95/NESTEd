@@ -5,5 +5,5 @@ layout (location = 0) in vec2 aPos;
 
 void main() {
   gl_Position = vec4(aPos.x, aPos.y, 0.0f, 1.0f);
-  gl_PointSize = 10.0;
+  gl_PointSize = 8.0;
 }
