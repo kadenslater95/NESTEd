@@ -120,13 +120,6 @@ void on_realize(GtkGLArea *area) {
   }
 
 
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
-    // Problem: glewInit failed, something is seriously wrong
-    fprintf(stderr, "GLEW Initialization Error: %s\n", glewGetErrorString(err));
-  }
-
-
   GdkGLContext *context = gtk_gl_area_get_context(area);
   int major, minor;
   gdk_gl_context_get_version(context, &major, &minor);
@@ -134,8 +127,14 @@ void on_realize(GtkGLArea *area) {
 
   printf("Using OpenGL Version: %s\n", glGetString(GL_VERSION));
 
+  printf("Using GLEW Version: %s\n", glewGetString(GLEW_VERSION));
+  GLenum err = glewInit();
+  if (GLEW_OK != err && err != GLEW_ERROR_NO_GLX_DISPLAY) {
+    // Problem: glewInit failed, something is seriously wrong
+    fprintf(stderr, "GLEW Initialization Error: %s\n", glewGetErrorString(err));
+    fprintf(stderr, "GLEW Error code: %d\n", err);
+  }
 
-  glEnable(GL_PROGRAM_POINT_SIZE);
 
   build_shader_program();
 
