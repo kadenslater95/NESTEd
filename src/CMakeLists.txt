@@ -17,6 +17,7 @@ include_directories(${GTK4_INCLUDE_DIRS})
 
 add_library(file_utils STATIC file_utils.c)
 add_library(display_utils STATIC display_utils.c)
+target_compile_definitions(display_utils PRIVATE SHADER_DIR="${CMAKE_SOURCE_DIR}")
 
 
 add_executable(main main.c)

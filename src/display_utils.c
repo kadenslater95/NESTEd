@@ -8,11 +8,18 @@
 #include "file_utils.h"
 
 
+#ifndef SHADER_DIR
+#define SHADER_DIR "."
+#endif
+
+#define VERTEX_SHADER_PATH SHADER_DIR "/shader.vert"
+#define FRAGMENT_SHADER_PATH SHADER_DIR "/shader.frag"
+
 
 unsigned int vertexShader;
 unsigned int fragmentShader;
 
-unsigned int shaderProgram;
+unsigned int shaderProgram = 0;
 
 unsigned int VAO, VBO, EBO;
 
@@ -33,7 +40,7 @@ unsigned int indices[] = {
  * 
  * @return int, return 1 if error is caught and 0 otherwise
 */
-int load_shader_from_file(unsigned int shader, char *filePath) {
+int load_shader_from_file(unsigned int shader, const char *filePath) {
   char* fileContent;
   unsigned int fileLength;
 
@@ -44,46 +51,51 @@ int load_shader_from_file(unsigned int shader, char *filePath) {
     return 1;
   }
 
-  glShaderSource(shader, 1, (const GLchar * const*)&fileContent, NULL);
+  GLint shaderLength = (GLint) fileLength;
+  glShaderSource(shader, 1, (const GLchar * const*)&fileContent, &shaderLength);
 
   free(fileContent);
 
   GLenum glError = glGetError();
   if (glError != GL_NO_ERROR) {
-    printf("Failed to compile shader! GL ERROR: %s\n", gluErrorString(glError));
-    return FALSE;
+    printf("Failed to load shader source! GL ERROR: %s\n", gluErrorString(glError));
+    return 1;
   }
 
   return 0;
 }
 
 
-void build_shader_program() {
+int build_shader_program() {
   int  success;
   char infoLog[512];
 
 
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  load_shader_from_file(vertexShader, "./shader.vert");
+  if (load_shader_from_file(vertexShader, VERTEX_SHADER_PATH) != 0) {
+    return 1;
+  }
   glCompileShader(vertexShader);
 
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
     printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog);
-    return;
+    return 1;
   }
 
 
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  load_shader_from_file(fragmentShader, "./shader.frag");
+  if (load_shader_from_file(fragmentShader, FRAGMENT_SHADER_PATH) != 0) {
+    return 1;
+  }
   glCompileShader(fragmentShader);
 
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
     printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", infoLog);
-    return;
+    return 1;
   }
 
 
@@ -98,12 +110,15 @@ void build_shader_program() {
   if (!success) {
       glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
       printf("ERROR::SHADER::PROGAM::LINKAGE_FAILED\n%s\n", infoLog);
-      return;
+      shaderProgram = 0;
+      return 1;
   }
 
 
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
+
+  return 0;
 }
 
 
@@ -136,7 +151,9 @@ void on_realize(GtkGLArea *area) {
   }
 
 
-  build_shader_program();
+  if (build_shader_program() != 0) {
+    return;
+  }
 
 
   glGenVertexArrays(1, &VAO);
@@ -182,11 +199,15 @@ gboolean render(GtkGLArea *area, GdkGLContext *context) {
   // we can start by clearing the buffer
   glClear(GL_COLOR_BUFFER_BIT);
 
+  if (shaderProgram == 0) {
+    return FALSE;
+  }
+
   glUseProgram(shaderProgram);
 
   glBindVertexArray(VAO);
 
-  glDrawElements(GL_POINTS, 5, GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_POINTS, sizeof(indices) / sizeof(indices[0]), GL_UNSIGNED_INT, 0);
 
   glFlush();
 

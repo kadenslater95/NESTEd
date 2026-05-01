@@ -6,10 +6,6 @@
 
 #include "file_utils.h"
 
-
-#define BLOCKLENGTH 1024
-
-
 /**
  * Read the file from the given file path and malloc an array for its content which the user of the function
  * will then be responsible for freeing
@@ -29,18 +25,28 @@ void read_file(const char *filePath, char **content, unsigned int *length) {
     return;
   }
 
-  char block[BLOCKLENGTH];
-  unsigned int readLength = 0;
-  unsigned int fileLength = 0;
+  if (fseek(filePointer, 0, SEEK_END) != 0) {
+    perror("Failed to seek file for reading! Error: ");
 
-  // Make a first pass through the file to determine the length
-  while ((readLength = fread(
-    block,
-    1,
-    BLOCKLENGTH, filePointer)) == BLOCKLENGTH) {
-    fileLength += readLength;
+    *content = NULL;
+    *length = 0;
+
+    fclose(filePointer);
+
+    return;
   }
-  fileLength += readLength;
+
+  long fileLength = ftell(filePointer);
+  if (fileLength < 0) {
+    perror("Failed to get file length! Error: ");
+
+    *content = NULL;
+    *length = 0;
+
+    fclose(filePointer);
+
+    return;
+  }
 
   if (fileLength == 0) {
     printf("Filepath provided to read_file was empty!");
@@ -55,42 +61,32 @@ void read_file(const char *filePath, char **content, unsigned int *length) {
 
   rewind(filePointer);
 
-  // For adding the null terminator I will need to add 1 to the end
-  // of the fileLength
-  fileLength += 1;
-  *length = fileLength;
-  *content = (char*) malloc(sizeof(char) * fileLength);
-  unsigned int offset = 0;
+  *length = (unsigned int) fileLength;
+  *content = (char*) malloc(sizeof(char) * (*length + 1));
+  if (!*content) {
+    perror("Failed to allocate file content! Error: ");
 
-  // In this pass put contents into the file
-  while ((readLength = fread(
-    block,
-    1,
-    BLOCKLENGTH - 1,
-    filePointer)) == BLOCKLENGTH - 1) {
-    block[BLOCKLENGTH - 1] = '\0';
+    *length = 0;
 
-    if (offset > 0) {
-      // offset - 1 to overwrite the previous \0
-      snprintf(&content[0][offset - 1], sizeof(block), "%s", block);
-    } else {
-      snprintf(&content[0][offset], sizeof(block), "%s", block);
-    }
+    fclose(filePointer);
 
-    // Add 1 to account for the null terminator added on
-    offset += readLength + 1;
+    return;
   }
 
-  if (readLength > 0) {
-    block[readLength + 1] = '\0';
+  size_t readLength = fread(*content, 1, *length, filePointer);
+  if (readLength != *length) {
+    perror("Failed to read file content! Error: ");
 
-    if (offset > 0) {
-      // offset - 1 to overwrite the previous \0
-      snprintf(&content[0][offset - 1], sizeof(block), "%s", block);
-    } else {
-      snprintf(&content[0][offset], sizeof(block), "%s", block);
-    }
+    free(*content);
+    *content = NULL;
+    *length = 0;
+
+    fclose(filePointer);
+
+    return;
   }
+
+  content[0][*length] = '\0';
 
   fclose(filePointer);
 }
