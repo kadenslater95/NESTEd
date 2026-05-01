@@ -24,14 +24,18 @@ unsigned int shaderProgram = 0;
 unsigned int VAO, VBO, EBO;
 
 float vertices[] = {
-  -0.9f, -0.9f,
-  0.9f, -0.9f,
-  0.9f, 0.9f,
-  -0.9f, 0.9f,
-  0.0f, 0.0f
+  0.0f, 0.0f,
+  255.0f, 255.0f,
+  10.0f, 10.0f,
+  10.0f, 11.0f,
+  15.0f, 10.0f,
+  17.0f, 10.0f,
+  17.0f, 12.0f,
+  15.0f, 12.0f,
+  16.0, 11.0f
 };
 
-unsigned int indices[] = {0, 1, 2, 3, 4, 5};
+unsigned int indices[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
 
 /**
@@ -126,12 +130,12 @@ int build_shader_program() {
 }
 
 
-void on_realize(GtkGLArea *area) {
+void on_realize(GtkGLArea *gl_area) {
   // We need to make the context current if we want to
   // call GL API
-  gtk_gl_area_make_current(area);
+  gtk_gl_area_make_current(gl_area);
 
-  GError *gl_area_error = gtk_gl_area_get_error(area);
+  GError *gl_area_error = gtk_gl_area_get_error(gl_area);
   if (gl_area_error != NULL) {
     printf("Failed to create gtk_gl_area: %s\n", gl_area_error->message);
     g_error_free(gl_area_error);
@@ -139,7 +143,7 @@ void on_realize(GtkGLArea *area) {
   }
 
 
-  GdkGLContext *context = gtk_gl_area_get_context(area);
+  GdkGLContext *context = gtk_gl_area_get_context(gl_area);
   int major, minor;
   gdk_gl_context_get_version(context, &major, &minor);
   printf("Gtk GL Context Version: %d.%d\n", major, minor);
@@ -160,6 +164,9 @@ void on_realize(GtkGLArea *area) {
   }
 
 
+  glUseProgram(shaderProgram);
+
+
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
   glGenBuffers(1, &EBO);
@@ -176,7 +183,13 @@ void on_realize(GtkGLArea *area) {
     indices,
     GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+  glVertexAttribPointer(
+    0, 
+    2, 
+    GL_FLOAT, 
+    GL_FALSE,
+    2 * sizeof(float), 
+    (void*)0);
   glEnableVertexAttribArray(0);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -194,7 +207,7 @@ void on_realize(GtkGLArea *area) {
 
 
 
-gboolean render(GtkGLArea *area, GdkGLContext *context) {
+gboolean render(GtkGLArea *gl_area, GdkGLContext *context) {
   // inside this function it's safe to use GL; the given
   // GdkGLContext has been made current to the drawable
   // surface used by the `GtkGLArea` and the viewport has
@@ -208,6 +221,26 @@ gboolean render(GtkGLArea *area, GdkGLContext *context) {
   }
 
   glUseProgram(shaderProgram);
+
+
+  int scale = gtk_widget_get_scale_factor(GTK_WIDGET(gl_area));
+  int logical_width = gtk_widget_get_width(GTK_WIDGET(gl_area));
+  int logical_height = gtk_widget_get_height(GTK_WIDGET(gl_area));
+  float logical_PointSize = logical_width / 257.0f;
+
+  // Set point size, but take ppi into account
+  float frame_PointSize = logical_PointSize * scale;
+
+  GLint uPointSize_loc = glGetUniformLocation(shaderProgram, "uPointSize");
+  glUniform1f(uPointSize_loc, frame_PointSize);
+
+  // Get viewport size so we can go from size X pixel to offset in NDC
+  float frame_width = (float) logical_width * scale;
+  float frame_height = (float) logical_height * scale;
+  printf("\n\nfram_PointSize: %f\nframe_width: %f\nframe_height: %f\n\n", frame_PointSize, frame_width, frame_height);
+  GLint uViewportSize_loc = glGetUniformLocation(shaderProgram, "uViewportSize");
+  glUniform2f(uViewportSize_loc, frame_width, frame_height);
+
 
   glBindVertexArray(VAO);
 
