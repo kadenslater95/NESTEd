@@ -23,19 +23,9 @@ unsigned int shaderProgram = 0;
 
 unsigned int VAO, VBO, EBO;
 
-float vertices[] = {
-  0.0f, 0.0f,
-  255.0f, 255.0f,
-  10.0f, 10.0f,
-  10.0f, 11.0f,
-  15.0f, 10.0f,
-  17.0f, 10.0f,
-  17.0f, 12.0f,
-  15.0f, 12.0f,
-  16.0, 11.0f
-};
+float vertices[2*256*256];
 
-unsigned int indices[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+unsigned int indices[2*256*256];
 
 
 /**
@@ -161,6 +151,19 @@ void on_realize(GtkGLArea *gl_area) {
 
   if (build_shader_program() != 0) {
     return;
+  }
+
+
+  int index;
+  for(int i = 0; i < 256; i++) {
+    for(int j = 0; j < 256; j++) {
+      index = (256*i + j) * 2;
+      vertices[index] = i;
+      vertices[index + 1] = j;
+
+      indices[index] = index;
+      indices[index + 1] = index + 1;
+    }
   }
 
 
