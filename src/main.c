@@ -26,7 +26,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
   g_signal_connect(gl_area, "render", G_CALLBACK(render), NULL);
 
   gtk_window_set_child(GTK_WINDOW(window), gl_area);
-  gtk_widget_set_size_request(GTK_WIDGET(gl_area), 1024, 1024);
 
   gtk_window_present(GTK_WINDOW(window));
 }

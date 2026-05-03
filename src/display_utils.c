@@ -240,7 +240,6 @@ gboolean render(GtkGLArea *gl_area, GdkGLContext *context) {
   // Get viewport size so we can go from size X pixel to offset in NDC
   float frame_width = (float) logical_width * scale;
   float frame_height = (float) logical_height * scale;
-  printf("\n\nfram_PointSize: %f\nframe_width: %f\nframe_height: %f\n\n", frame_PointSize, frame_width, frame_height);
   GLint uViewportSize_loc = glGetUniformLocation(shaderProgram, "uViewportSize");
   glUniform2f(uViewportSize_loc, frame_width, frame_height);
 
